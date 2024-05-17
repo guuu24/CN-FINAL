@@ -1,0 +1,258 @@
+#include <stdio.h>
+#include <string.h>
+
+char bits[5];
+// ip : 1000101011101
+void calculateParityBit(char dataWithParity[], int parityPosition[])
+{
+    printf("\n\nCalculating Parity Bits.......\n");
+
+    for (int i = 0; i < 5; i++)
+    {
+        printf("\nCalculating P%d...\n", parityPosition[i]+1);
+        int count = 0, count1 = 0;
+        int stepSize = parityPosition[i] + 1;
+
+        for (int j = 16 - parityPosition[i]; j >= 0; j--)
+        {
+            printf("%c ", dataWithParity[j]);
+            if (dataWithParity[j] == '1')
+            {
+                count++;
+            }
+            count1++;
+            if (count1 == stepSize)
+            {
+                j = j - stepSize;
+                count1 = 0;
+            }
+        }
+
+        if (count % 2 == 0)
+        {
+            dataWithParity[16 - parityPosition[i]] = '1';
+            printf("\n=> P%d = %d", parityPosition[i]+1, 1);
+            printf("\n--------------------------");
+        }
+
+        else
+        {
+            dataWithParity[16 - parityPosition[i]] = '0';
+            printf("\n=> P%d = %d", parityPosition[i]+1, 0);
+            printf("\n--------------------------");
+        }
+    }
+}
+void calculateParityBitForReceiver(char finalData[], int parityPosition[])
+{
+
+    printf("\n\nCalculating Parity Bits.......\n");
+    for (int i = 0; i < 5; i++)
+    {
+        printf("\nCalculating P%d...\n", parityPosition[i]+1);
+        int count = 0, count1 = 0;
+        int stepSize = parityPosition[i] + 1;
+
+        for (int j = 16 - parityPosition[i]; j >= 0; j--)
+        {
+            printf("%c ", finalData[j]);
+            if (finalData[j] == '1')
+            {
+                count++;
+            }
+            count1++;
+            if (count1 == stepSize)
+            {
+                j = j - stepSize;
+                count1 = 0;
+            }
+        }
+
+        if (count % 2 == 0)
+        {
+            bits[i] = '1';
+            printf("\n=>P%d = %d", parityPosition[i]+1, 1);
+        }
+
+        else
+        {
+            bits[i] = '0';
+            printf("\n=>P%d = %d", parityPosition[i]+1, 0);
+        }
+    }
+}
+
+int binaryToDecimal(char *binary) {
+    int length = strlen(binary);
+    int decimal = 0;
+
+    for (int i = length - 1; i >= 0; i--) {
+        if (binary[i] == '1') {
+            decimal += 1 << (length - 1 - i);
+        }
+    }
+    printf("\nError Position = %d ",decimal);
+    printf("\n");
+    return decimal;
+}
+
+
+int isPowerOfTwo(int num)
+{
+    return (num > 0) && ((num & (num - 1)) == 0);
+}
+
+void printData(char data[]){
+    for(int i = 0 ; i<17;i++){
+        printf("%c ",data[i]);
+    }
+}
+void printBits(char bit[]){
+    for(int i = 0 ; i<5;i++){
+        printf("%c ",bit[i]);
+    }
+}
+
+int power(int a, int b){
+    int res = 1;
+    // multiply a b times
+    while(b > 0){
+        res = res * a;
+        b--;
+    }
+    return res;
+}
+
+int main()
+{
+    char data[13]; //13
+    char dataWithParity[17];//17
+
+    printf("\nEnter data :");
+    scanf("%s", data);
+
+    int parityPosition[5];
+
+    int j = 0;
+    for (int i = 16; i >= 0; i--)
+    {
+        if (!isPowerOfTwo(i + 1))
+        {
+            dataWithParity[16 - i] = data[j];
+            j++;
+        }
+        else
+        {
+            dataWithParity[16 - i] = '_';
+        }
+    }
+    printf("\nData after appending parity positions : ");
+    printData(dataWithParity);
+
+    for (int i = 0; i < 5; i++)
+    {
+        parityPosition[i] = power(2, i) - 1;
+    }
+    
+    // calculating pariy bits
+
+    calculateParityBit(dataWithParity, parityPosition);
+
+    printf("\nData after setting parity bits: ");
+    printData(dataWithParity);
+
+    printf("\n--------------------------");
+
+    // store datawithParity in finalData
+    char finalData[17];
+    for (int i = 0; i < 17; i++)
+    {
+        finalData[i] = dataWithParity[i];
+    }
+
+    printf("\nMenu : \n1)Send data with error\n2)Send data without Error\nEnter choice : ");
+    int ch;
+    int errorPos;
+    scanf("%d", &ch);
+    switch (ch)
+    {
+    case 1:
+        printf("\nEnter error position [1 to 17] : ");
+        scanf("%d", &errorPos);
+        if (finalData[17 - errorPos] == '1')
+        {
+            finalData[17 - errorPos] = '0';
+        }
+        else
+        {
+            finalData[17 - errorPos] = '1';
+        }
+        printf("\nFinal data after introducing error: ");
+        printData(finalData);
+
+        printf("\n-----------------------------------------------------------------------");
+        // calculate parity bits
+        calculateParityBitForReceiver(finalData, parityPosition);
+        printf("\n-----------------------------------------------------------------------");
+        printf("\nCalculated Parity Bits (Receiver side) : ");
+        printBits(bits);
+        printf("\n");
+
+        printf("\nReversing Parity bits array : ");
+        int s1 = 0;
+        int e1 = 4;
+        while (s1 < e1)
+        {
+            char temp = bits[s1];
+            bits[s1] = bits[e1];
+            bits[e1] = temp;
+            s1++;
+            e1--;
+        }
+
+        printBits(bits);
+
+        printf("\n");
+
+        // finding error position
+        int pos = binaryToDecimal(bits);
+
+        printf("\nFinal Data afrer Fixing error => ");
+        if (finalData[17-pos] == '1')
+        {
+            finalData[17-pos] = '0';
+        }
+        else
+        {
+            finalData[17-pos] = '1';
+        }
+
+        printData(finalData);
+        printf("\n-----------------------------------------------------------------------");
+        break;
+    case 2:
+        printf("\n-----------------------------------------------------------------------");
+        // calculate parity bits
+        calculateParityBitForReceiver(finalData, parityPosition);
+        printf("\n-----------------------------------------------------------------------");
+        printf("\nCalculated Parity Bits (Receiver side) : ");
+        for (int u = 0; u < 5; u++)
+        {
+            printf("%c ", bits[u]);
+        }
+        printf("\n");
+        printf("\nNo Error Detected.");
+        printf("\n");
+        printf("\nFinal Data => ");
+        for (int t = 0; t < 17; t++)
+        {
+            printf("%c ", finalData[t]);
+        }
+        printf("\n-----------------------------------------------------------------------");
+        break;
+
+    default:
+        break;
+    }
+}
+// 1111011
