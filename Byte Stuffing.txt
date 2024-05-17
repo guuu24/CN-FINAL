@@ -1,0 +1,85 @@
+// flag byte with byte stuffing
+// AFLAGB -> FLAG A ESC FLAG B FLAG
+
+#include<stdio.h>
+#include<string.h>
+
+char flag[] = {'0','1','1','1','1','1','1','0'};
+char esc[] = {'0','0','0','1','1','0','1','1'};
+int len;
+char data[100];
+char encodedData[1000];
+void sender(){
+    
+    printf("Enter length of the data : ");  // 24 :  A_flag_B : 11111111_01111110_00000000
+    scanf("%d",&len);                       //                 01111110_11111111_00011011_01111110_00000000_01111110
+    printf("\nEnter data : ");              //                  flag      a         esc     flag     b         flag
+    scanf("%s",data);
+    data[len] = '\0';
+
+    // lets encode the data
+
+    // first add flag
+
+    int k = 0; // to keep track of encoded data ptr
+
+    for(int j = 0 ; j < 8 ; j++){
+        encodedData[k++] = flag[j];
+    }
+
+    int i;
+    for(i = 0 ; i < len ; i+=8){
+        if(data[i] == '0' && data[i+1] == '1' && data[i+2] == '1' && data[i+3] == '1' && data[i+4] == '1' && data[i+5] == '1' && data[i+6] == '1' && data[i+7] == '0'){
+            // flag found
+
+            // add esc then add flag
+            for(int j = 0 ; j < 8 ; j++){
+                encodedData[k++] = esc[j];
+            }
+            for(int j = 0 ; j < 8 ; j++){
+                encodedData[k++] = flag[j];
+            }
+
+        }
+        else if (data[i] == '0' && data[i+1] == '0' && data[i+2] == '0' && data[i+3] == '1' && data[i+4] == '1' && data[i+5] == '0' && data[i+6] == '1' && data[i+7] == '1'){
+            // esc found
+            // add esc and then again esc
+             for(int j = 0 ; j < 8 ; j++){
+                encodedData[k++] = esc[j];
+            }
+            for(int j = 0 ; j < 8 ; j++){
+                encodedData[k++] = esc[j];
+            }
+        }
+        else{
+            // if no flag or esc just add those 8 bits to encoded data
+            for(int j = 0 ; j < 8 ; j++){
+                encodedData[k++] = data[i+j];
+            }
+        }
+    }
+
+
+    // strcat(encodedData,flag);
+    for(int j = 0 ; j < 8 ; j++){
+        encodedData[k++] = flag[j];
+    }
+
+    // encodedData[i+8] = '\0';
+
+    printf("\nEncoded data : %s",encodedData);
+
+}
+void receiver(){
+    // keep 2 counters for esc and flag each 
+    // initialize them to 0
+    // if counter is 0 and flag is appered make counter 1 and skip the flag
+    // if counter is 1 and flag is appered then take the flag to decoded data and make counter 0.
+    // for esc, if esc comes take next 8 bit to decoded data.
+    
+    printf("\nDecoded data : %s",data);
+}
+int main(){
+    sender();
+    receiver();
+}

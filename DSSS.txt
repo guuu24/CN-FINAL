@@ -1,0 +1,76 @@
+#include<stdio.h>
+#include<string.h>
+# define s 10
+char data[s];
+char spreadData[110];
+char dataToSend[110];
+char sendDataXNOR[110];
+
+char pattern[] = {'1','0','1','1','0','1','1','1','0','0','0'};
+
+void sender(){    
+    printf("Enter data : ");
+    scanf("%s",data);
+    // convert each bit of data to 11 bit
+    int l = strlen(data);
+    int k = 0;
+    for(int i = 0 ; i < l ; i++){
+        // if bit is 0 write it 00000000000
+        if(data[i] == '0'){
+            for(int j = 0 ; j < 11 ; j++){
+                spreadData[k] = '0';
+                k++;
+            }
+        }
+        // if bit is 1 write it 11111111111
+        else{
+            for(int j = 0 ; j < 11 ; j++){
+                spreadData[k] = '1';
+                k++;
+            }
+        }
+    }
+    // terminate the string 
+    spreadData[k] = '\0';
+
+    printf("Spreaded data : %s",spreadData);
+
+    // xnor the spread data and send to receiver
+    for(int i = 0 ; i < strlen(spreadData); i++){
+        if(spreadData[i] == pattern[i%11]){
+            dataToSend[i] = '1';
+        }
+        else{
+            dataToSend[i] = '0';
+        }
+    }
+    dataToSend[strlen(spreadData)] = '\0';
+    printf("\nData to transmit or send : %s",dataToSend);
+
+}
+
+void receiver(char *dataToSend,char *pattern){
+    for(int i = 0 ; i < strlen(dataToSend); i++){
+        if(dataToSend[i] == pattern[i%11]){
+            sendDataXNOR[i] = '1';
+        }
+        else{
+            sendDataXNOR[i] = '0';
+        }
+    }
+    sendDataXNOR[strlen(dataToSend)] = '\0';
+    printf("\nReceived data after xnor : %s",spreadData);
+
+    // write original data
+    printf("\nOriginal Data : ");
+    for(int i = 0 ; i < strlen(spreadData); i++){
+        if(i % 11 == 0){
+            printf("%c",spreadData[i]);
+        }
+    }
+}
+
+int main(){
+    sender();
+    receiver(spreadData,pattern);
+}
